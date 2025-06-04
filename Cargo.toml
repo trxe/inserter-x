@@ -11,5 +11,6 @@ polars = { version = "0.48.1", features = ["csv", "lazy", "fmt"], default-featur
 polars-arrow = "0.48.1"
 postgres = "0.19.10"
 rand = "0.9.1"
-sqlx = { version = "0.8.6", features = ["macros"] }
+sqlx = { version = "0.8.6", features = ["macros", "postgres", "runtime-tokio"] }
+tokio = "1.45.1"
 
