@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+argh = { version = "*", default-features = false }
+polars = { version = "0.48.1", default-features = false, features = [ "lazy", "csv", "fmt" ] }
+polars-arrow = { version = "0.48.1", default-features = false }
