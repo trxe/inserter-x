@@ -1,6 +1,8 @@
+use std::path::Path;
+
 use argh::FromArgs;
 use polars::prelude::*;
-use polars_arrow::array::{Array, NullArray, PrimitiveArray, Utf8ViewArray};
+use polars_arrow::{array::{Array, NullArray, PrimitiveArray, Utf8ViewArray}, ffi::{export_array_to_c, export_field_to_c, import_field_from_c}};
 
 
 #[derive(FromArgs)]
@@ -32,8 +34,13 @@ impl CArrowColumn {
 fn convert(frame: DataFrame, args: Args) {
     // let columns = frame.take_columns();
     // let chclient = clickhouse_rs::Pool::new(args.url);
-    frame.iter_chunks(CompatLevel::newest(), false).for_each(|chunk| {
+    let bytes: Vec<u8> = vec![];
 
+    frame.iter_chunks(CompatLevel::newest(), false).for_each(|chunk| {
+        println!("{:?}", chunk);
+        let res = chunk.schema().clone().into_iter().map(|(_, field)| { 
+            let data = 
+        });
     });
     // let carr = columns.into_iter().map(CArrowColumn::new).collect::<Vec<_>>();
 }
