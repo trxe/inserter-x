@@ -4,3 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+arrow = { version = "55.1.0", default-features = false, features = [ "ffi" ] }
+arrow-array = { version = "55.1.0", default-features = false }
+arrow-ipc = { version = "55.1.0", default-features = false }
+polars = { version = "0.48.1", default-features = false, features = [ "dtype-datetime", "dtype-date", "dtype-time" ] }
+polars-arrow = { version = "0.48.1", default-features = false }
+thiserror = { version = "2.0.12", default-features = false }
+
+[dev-dependencies]
+polars = { version = "0.48.1", default-features = false, features = [ "csv", "fmt", "polars-io", "json", "sql", "lazy" ] }
+reqwest = { version = "0.12.19", features = [ "blocking" ] }
