@@ -6,8 +6,8 @@ edition = "2024"
 [dependencies]
 argh = { version = "*", default-features = false }
 arrow = { version = "55.1.0", default-features = false, features = [ "ffi" ] }
-arrow-array = { version = "55.1.0", default-features = false }
+arrow-array = { version = "55.1.0" }
 arrow-ipc = { version = "55.1.0", default-features = false }
-polars = { version = "0.48.1", default-features = false, features = [ "lazy", "csv", "fmt", "dtype-datetime" ] }
+polars = { version = "0.48.1", default-features = false, features = [ "lazy", "csv", "fmt", "dtype-datetime", "dtype-date", "dtype-time", "polars-io", "json" ] }
 polars-arrow = { version = "0.48.1", default-features = false }
 reqwest = { version = "0.12.19", default-features = false, features = [ "blocking" ] }
