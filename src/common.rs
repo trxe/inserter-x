@@ -232,12 +232,13 @@ pub fn arrow_to_bytes(
             return Err(InsError::BuildError("arrow StreamWriter", e.to_string()));
         }
     };
+    let sschema = frame.schema().iter().map(|(name, field)| field.to_arrow_field(name.clone(), CompatLevel::newest())).collect::<Vec<_>>();
     for chunk in frame.iter_chunks(CompatLevel::newest(), false) {
-        let (sschema, arrays) = chunk.into_schema_and_arrays();
-        let mut revarr = arrays.into_iter().rev().collect::<Vec<_>>();
+        let arrays = chunk.arrays();
+        let mut revarr = arrays.iter().rev().collect::<Vec<_>>();
         let mut batch = vec![];
 
-        for (_, field) in sschema.iter() {
+        for field in sschema.iter() {
             let cfield = unsafe {
                 std::mem::transmute::<
                     polars_arrow::ffi::ArrowSchema,
@@ -249,7 +250,7 @@ pub fn arrow_to_bytes(
                 std::mem::transmute::<
                     polars_arrow::ffi::ArrowArray,
                     arrow::array::ffi::FFI_ArrowArray,
-                >(export_array_to_c(arr))
+                >(export_array_to_c(arr.to_owned()))
             };
             let array_data = match unsafe { from_ffi(carr, &cfield) } {
                 Ok(x) => x,

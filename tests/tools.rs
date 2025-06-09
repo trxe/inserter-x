@@ -1,37 +1,7 @@
 #[cfg(test)]
 pub mod tests {
-    use std::time::Instant;
-
     use inserter_x::clickhouse::ClickhouseInserter;
     use polars::{frame::DataFrame, io::SerReader, prelude::{CsvParseOptions, CsvReadOptions, JsonReader, LazyFrame}, sql::SQLContext};
-
-    pub struct Timer {
-        pub name: String,
-        pub start: Instant,
-    }
-
-    impl Timer {
-        pub fn new(name: &str) -> Self {
-            Self {
-                name: name.to_owned(),
-                start: Instant::now(),
-            }
-        }
-    }
-
-    impl Drop for Timer {
-        fn drop(&mut self) {
-            println!("{}: {:?}", self.name, self.start.elapsed());
-        }
-    }
-
-    #[macro_export]
-    macro_rules! timer {
-        ($name:expr, $res:expr) => {{
-            let _timer = Timer::new($name);
-            $res
-        }};
-    }
 
     pub fn run_sql(query: &str, frames: &[(&str, LazyFrame)]) -> LazyFrame {
         let mut context = SQLContext::new();
@@ -56,16 +26,14 @@ pub mod tests {
                 .body(body)
         ];
         for req in reqbuilders {
-            timer!("req", {
-                match req.send() {
-                    Ok(x) => {
-                        println!("Response status [{}]: {:?}", x.status(), x.text());
-                    }
-                    Err(e) => {
-                        println!("Error: {}", e);
-                    }
+            match req.send() {
+                Ok(x) => {
+                    println!("Response status [{}]: {:?}", x.status(), x.text());
                 }
-            });
+                Err(e) => {
+                    println!("Error: {}", e);
+                }
+            }
         }
     }
 
@@ -88,16 +56,6 @@ pub mod tests {
         ins = if let Some(x) = primary_key_str { ins.with_primary_key(x.split(",").map(|x| x.trim().to_owned()).collect()) } else { ins };
         ins = if let Some(x) = not_nullable_str { ins.with_not_null(x.split(",").map(|x| x.trim().to_owned()).collect()) } else { ins };
         ins.with_schema_from_cols(dataframe.get_columns()).expect("bad columns").build_queries().unwrap()
-    }
-
-    pub fn parse_csv_file(filepath: &str) -> (String, DataFrame) {
-        let path = std::path::Path::new(filepath);
-        let dfname = path.file_stem().unwrap().to_str().unwrap().to_owned();
-        let parse_options = CsvParseOptions::default().with_try_parse_dates(true);
-        let reader = CsvReadOptions::default()
-            .with_parse_options(parse_options)
-            .try_into_reader_with_file_path(Some(filepath.into())).expect("csv reader");
-        (dfname, reader.finish().expect("failed to read df"))
     }
 
     pub fn parse_json_from_url(table_name: &str, url: &str) -> (String, DataFrame) {

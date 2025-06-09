@@ -1,19 +1,26 @@
 [package]
 name = "inserter-x"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Copy or insert dataframes into databases (currently only Clickhouse)"
 license = "MIT"
 license-path = "./LICENSE"
 
 [dependencies]
-arrow = { version = "55.1.0", default-features = false, features = [ "ffi" ] }
-arrow-array = { version = "55.1.0", default-features = false }
-arrow-ipc = { version = "55.1.0", default-features = false }
-polars = { version = "0.48.1", default-features = false, features = [ "dtype-datetime", "dtype-date", "dtype-time" ] }
-polars-arrow = { version = "0.48.1", default-features = false }
+arrow = { version = "=53.2.0", default-features = false, features = [ "ffi" ] }
+arrow-array = { version = "=53.2.0", default-features = false }
+arrow-ipc = { version = "=53.2.0", default-features = false }
+chrono = "=0.4.38"
+polars = { version = "=0.45.1", default-features = false, features = [ "dtype-datetime", "dtype-date", "dtype-time" ] }
+polars-arrow = { version = "=0.45.1", default-features = false }
 thiserror = { version = "2.0.12", default-features = false }
 
 [dev-dependencies]
-polars = { version = "0.48.1", default-features = false, features = [ "csv", "fmt", "polars-io", "json", "sql", "lazy" ] }
+argh = "0.1.13"
+polars = { version = "=0.45.1", default-features = false, features = [ "csv", "fmt", "polars-io", "json", "sql", "lazy" ] }
 reqwest = { version = "0.12.19", features = [ "blocking" ] }
+
+[[example]]
+name = "insert-bench"
+path = "examples/benchmark.rs"
+
