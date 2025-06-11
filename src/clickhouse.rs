@@ -35,6 +35,8 @@ fn polars_to_clickhouse_sql(pl: &PlArrowDtype) -> InsResult<String> {
         PlArrowDtype::UInt16 => "UInt16".to_owned(),
         PlArrowDtype::UInt32 => "UInt32".to_owned(),
         PlArrowDtype::UInt64 => "UInt64".to_owned(),
+        PlArrowDtype::Decimal(p, s) => format!("Decimal({}, {})", p, s),
+        PlArrowDtype::Decimal256(p, s) => format!("Decimal({}, {})", p, s),
         PlArrowDtype::Float32 => "Float32".to_owned(),
         PlArrowDtype::Float64 => "Float64".to_owned(),
         PlArrowDtype::Utf8 => "String".to_owned(),

@@ -8,6 +8,7 @@ use polars_arrow::ffi::{export_array_to_c, export_field_to_c};
 use thiserror::Error;
 
 pub type PlColumn = polars::prelude::Column;
+pub type PlDtype = polars::prelude::DataType;
 pub type PlArrowDtype = polars::prelude::ArrowDataType;
 pub type ArDtype = arrow::datatypes::DataType;
 pub type ArField = arrow::datatypes::Field;
@@ -76,6 +77,12 @@ pub fn polars_to_arrow_datatype(pl: &PlArrowDtype) -> InsResult<ArDtype> {
         PlArrowDtype::Int16 => ArDtype::Int16,
         PlArrowDtype::Int32 => ArDtype::Int32,
         PlArrowDtype::Int64 => ArDtype::Int64,
+        PlArrowDtype::UInt8 => ArDtype::UInt8,
+        PlArrowDtype::UInt16 => ArDtype::UInt16,
+        PlArrowDtype::UInt32 => ArDtype::UInt32,
+        PlArrowDtype::UInt64 => ArDtype::UInt64,
+        PlArrowDtype::Decimal(x, y) => ArDtype::Decimal128(*x as u8, *y as i8),
+        PlArrowDtype::Decimal256(x, y) => ArDtype::Decimal256(*x as u8, *y as i8),
         PlArrowDtype::Float32 => ArDtype::Float32,
         PlArrowDtype::Float64 => ArDtype::Float64,
         PlArrowDtype::Binary => ArDtype::Binary,

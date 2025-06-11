@@ -1,7 +1,35 @@
 #[cfg(test)]
 pub mod tests {
-    use inserter_x::clickhouse::ClickhouseInserter;
-    use polars::{frame::DataFrame, io::SerReader, prelude::{CsvParseOptions, CsvReadOptions, JsonReader, LazyFrame}, sql::SQLContext};
+    use inserter_x::{clickhouse::ClickhouseInserter, common::PlDtype};
+    use polars::{df, frame::DataFrame, io::SerReader, prelude::{col, IntoLazy, JsonReader, LazyFrame}, sql::SQLContext};
+
+    pub fn get_sample_df_numerical() -> DataFrame {
+        df!(
+            "int8" => [-1, -2, 4, 100],
+            "uint8" => [1, 2, 4, 100],
+            "int16" => [-1, -2, 4, 100],
+            "uint16" => [1, 2, 4, 100],
+            "int32" => [-1, -2, 4, 100],
+            "uint32" => [1, 2, 4, 100],
+            "int64" => [-1, -2, 4, 100],
+            "uint64" => [1, 2, 4, 100],
+            "float" => [1.1, 2.2, 4.4, 100.001],
+            "double" => [1.1, 2.2, 4.4, 100.001],
+        ).unwrap().lazy().with_columns([
+            col("int8").cast(PlDtype::Int8),
+            col("uint8").cast(PlDtype::UInt8),
+            col("int16").cast(PlDtype::Int16),
+            col("uint16").cast(PlDtype::UInt16),
+            col("int32").cast(PlDtype::Int32),
+            col("uint32").cast(PlDtype::UInt32),
+            col("int64").cast(PlDtype::Int64),
+            col("uint64").cast(PlDtype::UInt64),
+            col("float").cast(PlDtype::Float32),
+            col("double").cast(PlDtype::Float64),
+            col("double").alias("decimal128").cast(PlDtype::Decimal(Some(38), None)),
+            col("double").alias("decimal256").cast(PlDtype::Decimal(None, Some(1))),
+        ]).collect().unwrap()
+    }
 
     pub fn run_sql(query: &str, frames: &[(&str, LazyFrame)]) -> LazyFrame {
         let mut context = SQLContext::new();

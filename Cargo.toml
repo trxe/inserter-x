@@ -7,11 +7,11 @@ license = "MIT"
 license-path = "./LICENSE"
 
 [dependencies]
-arrow = { version = "=53.2.0", default-features = false, features = [ "ffi" ] }
-arrow-array = { version = "=53.2.0", default-features = false }
-arrow-ipc = { version = "=53.2.0", default-features = false }
+arrow = { version = "=53.4.0", default-features = false, features = [ "ffi" ] }
+arrow-array = { version = "=53.4.0", default-features = false }
+arrow-ipc = { version = "=53.4.0", default-features = false }
 chrono = "=0.4.38"
-polars = { version = "=0.45.1", default-features = false, features = [ "dtype-datetime", "dtype-date", "dtype-time" ] }
+polars = { version = "=0.45.1", default-features = false, features = [ "dtype-full" ] }
 polars-arrow = { version = "=0.45.1", default-features = false }
 thiserror = { version = "2.0.12", default-features = false }
 

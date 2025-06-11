@@ -4,7 +4,7 @@ pub mod tools;
 mod tests {
     use polars::prelude::{IntoLazy, col};
 
-    use crate::{tools::tests::{clickhouse_converter, parse_json_from_url, run_sql, send_db_from_inserter}};
+    use crate::tools::tests::{clickhouse_converter, get_sample_df_numerical, parse_json_from_url, run_sql, send_db_from_inserter};
 
     const SAMPLE_URL: &str = "https://records.nhl.com/site/api/draft?include=draftProspect.id&include=player.birthStateProvince&include=player.birthCountry&include=player.position&include=player.onRoster&include=player.yearsPro&include=player.firstName&include=player.lastName&include=player.id&include=team.id&include=team.placeName&include=team.commonName&include=team.fullName&include=team.triCode&include=team.logos&include=franchiseTeam.franchise.mostRecentTeamId&include=franchiseTeam.franchise.teamCommonName&include=franchiseTeam.franchise.teamPlaceName&sort=[{%22property%22:%22overallPickNumber%22,%22direction%22:%22ASC%22}]&cayenneExp=%20draftYear%20=%202024&start=0&limit=50";
 
@@ -33,4 +33,10 @@ mod tests {
         send_db_from_inserter("http://default:password@localhost:8123/", &ch, &goals);
     }
 
+    #[test]
+    fn basic_numerical_types() {
+        let db = get_sample_df_numerical();
+        let ch = clickhouse_converter("numerical_test", &db, Some("default"), Some("MergeTree"), None, Some("uint8"), None, Some("CREATE OR REPLACE TABLE"));
+        send_db_from_inserter("http://default:password@localhost:8123/", &ch, &db);
+    }
 }
