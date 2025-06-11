@@ -27,7 +27,12 @@ pub enum InsError {
 pub type InsResult<T> = Result<T, InsError>;
 
 pub trait CreateCmd {
-    fn field(name: &str, is_nullable: bool, dtype: Option<&str>, constraint: Option<&str>) -> String {
+    fn field(
+        name: &str,
+        is_nullable: bool,
+        dtype: Option<&str>,
+        constraint: Option<&str>,
+    ) -> String {
         if let Some(d) = dtype {
             format!(
                 "{} {} {} NULL",
@@ -239,7 +244,11 @@ pub fn arrow_to_bytes(
             return Err(InsError::BuildError("arrow StreamWriter", e.to_string()));
         }
     };
-    let sschema = frame.schema().iter().map(|(name, field)| field.to_arrow_field(name.clone(), CompatLevel::newest())).collect::<Vec<_>>();
+    let sschema = frame
+        .schema()
+        .iter()
+        .map(|(name, field)| field.to_arrow_field(name.clone(), CompatLevel::newest()))
+        .collect::<Vec<_>>();
     for chunk in frame.iter_chunks(CompatLevel::newest(), false) {
         let arrays = chunk.arrays();
         let mut revarr = arrays.iter().rev().collect::<Vec<_>>();

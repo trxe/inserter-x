@@ -144,7 +144,8 @@ impl ClickhouseInserter {
 
     pub fn with_field(mut self, column: &str, constraint: &str) -> Self {
         self.fields.insert(column.to_owned(), None);
-        self.override_fields.insert(column.to_owned(), constraint.to_owned());
+        self.override_fields
+            .insert(column.to_owned(), constraint.to_owned());
         self
     }
 
@@ -197,21 +198,20 @@ impl ClickhouseInserter {
             .trim()
             .to_owned();
         let mut fields = vec![];
-        for (name, pladt)  in self.fields.iter() {
+        for (name, pladt) in self.fields.iter() {
             let is_nested = pladt.as_ref().map(|f| f.is_nested()).unwrap_or(true);
             let typename = if let Some(pl) = &pladt {
                 Some(polars_to_clickhouse_sql(pl)?)
             } else {
                 None
             };
-            fields.push(
-                Self::field(name, 
-                    !self.not_null.contains(name) && !is_nested, 
-                    typename.as_deref(),
-                    self.override_fields.get(name).map(|x| x.as_str())
-                )
-            );
-        };
+            fields.push(Self::field(
+                name,
+                !self.not_null.contains(name) && !is_nested,
+                typename.as_deref(),
+                self.override_fields.get(name).map(|x| x.as_str()),
+            ));
+        }
         self.cached_create_query = Some(Self::table(
             table_name.as_str(),
             fields.as_slice(),
@@ -244,7 +244,8 @@ impl ClickhouseInserter {
                 adt,
                 !self.not_null.contains(column.name().as_str()),
             );
-            self.fields.insert(column.name().to_string(), Some(pladt.to_owned()));
+            self.fields
+                .insert(column.name().to_string(), Some(pladt.to_owned()));
             schema_builder.push(afield);
         }
         self.schema = Arc::new(schema_builder.finish());

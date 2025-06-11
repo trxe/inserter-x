@@ -1,7 +1,13 @@
 #[cfg(test)]
 pub mod tests {
     use inserter_x::{clickhouse::ClickhouseInserter, common::PlDtype};
-    use polars::{df, frame::DataFrame, io::SerReader, prelude::{col, IntoLazy, JsonReader, LazyFrame}, sql::SQLContext};
+    use polars::{
+        df,
+        frame::DataFrame,
+        io::SerReader,
+        prelude::{IntoLazy, JsonReader, LazyFrame, col},
+        sql::SQLContext,
+    };
 
     pub fn get_sample_df_numerical() -> DataFrame {
         df!(
@@ -15,7 +21,10 @@ pub mod tests {
             "uint64" => [1, 2, 4, 100],
             "float" => [1.1, 2.2, 4.4, 100.001],
             "double" => [1.1, 2.2, 4.4, 100.001],
-        ).unwrap().lazy().with_columns([
+        )
+        .unwrap()
+        .lazy()
+        .with_columns([
             col("int8").cast(PlDtype::Int8),
             col("uint8").cast(PlDtype::UInt8),
             col("int16").cast(PlDtype::Int16),
@@ -26,9 +35,15 @@ pub mod tests {
             col("uint64").cast(PlDtype::UInt64),
             col("float").cast(PlDtype::Float32),
             col("double").cast(PlDtype::Float64),
-            col("double").alias("decimal128").cast(PlDtype::Decimal(Some(38), None)),
-            col("double").alias("decimal256").cast(PlDtype::Decimal(None, Some(1))),
-        ]).collect().unwrap()
+            col("double")
+                .alias("decimal128")
+                .cast(PlDtype::Decimal(Some(38), None)),
+            col("double")
+                .alias("decimal256")
+                .cast(PlDtype::Decimal(None, Some(1))),
+        ])
+        .collect()
+        .unwrap()
     }
 
     pub fn run_sql(query: &str, frames: &[(&str, LazyFrame)]) -> LazyFrame {
@@ -51,7 +66,7 @@ pub mod tests {
                 .post(host)
                 .query(&[("query", ch.get_insert_query().expect("insert"))])
                 .header("Content-Length", body.len())
-                .body(body)
+                .body(body),
         ];
         for req in reqbuilders {
             match req.send() {
@@ -77,13 +92,40 @@ pub mod tests {
         creator: Option<&str>,
     ) -> ClickhouseInserter {
         let mut ins = ClickhouseInserter::default(dfname);
-        ins = if let Some(x) = db { ins.with_dbname(x) } else { ins };
-        ins = if let Some(x) = engine { ins.with_engine(x) } else { ins };
-        ins = if let Some(x) = creator { ins.with_create_method(x) } else { ins };
-        ins = if let Some(x) = order_by_str { ins.with_order_by(x.split(",").map(|x| x.trim().to_owned()).collect()) } else { ins };
-        ins = if let Some(x) = primary_key_str { ins.with_primary_key(x.split(",").map(|x| x.trim().to_owned()).collect()) } else { ins };
-        ins = if let Some(x) = not_nullable_str { ins.with_not_null(x.split(",").map(|x| x.trim().to_owned()).collect()) } else { ins };
-        ins.with_schema_from_cols(dataframe.get_columns()).expect("bad columns").build_queries().unwrap()
+        ins = if let Some(x) = db {
+            ins.with_dbname(x)
+        } else {
+            ins
+        };
+        ins = if let Some(x) = engine {
+            ins.with_engine(x)
+        } else {
+            ins
+        };
+        ins = if let Some(x) = creator {
+            ins.with_create_method(x)
+        } else {
+            ins
+        };
+        ins = if let Some(x) = order_by_str {
+            ins.with_order_by(x.split(",").map(|x| x.trim().to_owned()).collect())
+        } else {
+            ins
+        };
+        ins = if let Some(x) = primary_key_str {
+            ins.with_primary_key(x.split(",").map(|x| x.trim().to_owned()).collect())
+        } else {
+            ins
+        };
+        ins = if let Some(x) = not_nullable_str {
+            ins.with_not_null(x.split(",").map(|x| x.trim().to_owned()).collect())
+        } else {
+            ins
+        };
+        ins.with_schema_from_cols(dataframe.get_columns())
+            .expect("bad columns")
+            .build_queries()
+            .unwrap()
     }
 
     pub fn parse_json_from_url(table_name: &str, url: &str) -> (String, DataFrame) {
@@ -94,6 +136,9 @@ pub mod tests {
         }
         let text = response.text().expect("bad text");
         let reader = JsonReader::new(std::io::Cursor::new(text));
-        (table_name.to_string(), reader.finish().expect("failed to read df"))
+        (
+            table_name.to_string(),
+            reader.finish().expect("failed to read df"),
+        )
     }
 }

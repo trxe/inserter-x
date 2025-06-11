@@ -1,8 +1,11 @@
 use std::time::Instant;
 
-use argh::{from_env, FromArgs};
+use argh::{FromArgs, from_env};
 use inserter_x::clickhouse::ClickhouseInserter;
-use polars::{io::SerReader, prelude::{CsvParseOptions, CsvReadOptions}};
+use polars::{
+    io::SerReader,
+    prelude::{CsvParseOptions, CsvReadOptions},
+};
 
 #[derive(FromArgs, Clone)]
 #[argh(description = "Benchmark")]
@@ -48,7 +51,10 @@ macro_rules! timer {
 }
 
 fn split_to_keys(orig: &str) -> Vec<String> {
-    orig.split(",").map(|x| x.trim().to_owned()).filter(|x| !x.is_empty()).collect()
+    orig.split(",")
+        .map(|x| x.trim().to_owned())
+        .filter(|x| !x.is_empty())
+        .collect()
 }
 
 fn main() {
@@ -58,12 +64,16 @@ fn main() {
     let parse_options = CsvParseOptions::default().with_try_parse_dates(true);
     let reader = CsvReadOptions::default()
         .with_parse_options(parse_options)
-        .try_into_reader_with_file_path(Some(args.filepath.into())).expect("csv reader");
+        .try_into_reader_with_file_path(Some(args.filepath.into()))
+        .expect("csv reader");
     let frame = timer!("import", reader.finish().expect("failed to read df"));
     let order_by = split_to_keys(args.order_by.as_deref().unwrap_or_default());
     let primary_keys = split_to_keys(args.primary_keys.as_deref().unwrap_or_default());
     let extra_nullable = split_to_keys(args.not_null.as_deref().unwrap_or_default());
-    println!("ORDER BY: {:?}\nPRIMARY KEYS: {:?}\nNULL: {:?}", order_by, primary_keys, extra_nullable);
+    println!(
+        "ORDER BY: {:?}\nPRIMARY KEYS: {:?}\nNULL: {:?}",
+        order_by, primary_keys, extra_nullable
+    );
     let ch = ClickhouseInserter::default(&dfname)
         .with_engine("MergeTree")
         .with_order_by(order_by)
@@ -71,20 +81,31 @@ fn main() {
         .with_not_null(extra_nullable)
         .with_create_method("CREATE OR REPLACE TABLE")
         .with_schema_from_cols(frame.get_columns())
-        .expect("bad columns").build_queries().unwrap();
+        .expect("bad columns")
+        .build_queries()
+        .unwrap();
     let client = reqwest::blocking::Client::new();
-    let body = timer!("creating arrow transport", ch.get_arrow_body(&frame).expect("body"));
+    let body = timer!(
+        "creating arrow transport",
+        ch.get_arrow_body(&frame).expect("body")
+    );
     println!("CREATE: {}", ch.get_create_query().expect("create"));
     let reqbuilders = [
-        ("create", client
-            .post(&args.host)
-            .query(&[("query", ch.get_create_query().expect("create"))])
-            .header("Content-Length", 0)),
-        ("insert", client
-            .post(&args.host)
-            .query(&[("query", ch.get_insert_query().expect("insert"))])
-            .header("Content-Length", body.len())
-            .body(body))
+        (
+            "create",
+            client
+                .post(&args.host)
+                .query(&[("query", ch.get_create_query().expect("create"))])
+                .header("Content-Length", 0),
+        ),
+        (
+            "insert",
+            client
+                .post(&args.host)
+                .query(&[("query", ch.get_insert_query().expect("insert"))])
+                .header("Content-Length", body.len())
+                .body(body),
+        ),
     ];
     for (label, req) in reqbuilders {
         match timer!(label, req.send()) {
@@ -96,5 +117,4 @@ fn main() {
             }
         }
     }
-
 }
